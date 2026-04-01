@@ -5,14 +5,29 @@ from model_service import get_service, AuthenticityModelService
 import uvicorn
 import time
 import logging
+from contextlib import asynccontextmanager
 
 # 1. Logging
 logging.basicConfig(level=logging.INFO)
 logger = logging.getLogger(__name__)
 
-app = FastAPI(title="CreatorTrust ML Scoring API - Refined")
+# 2. State & Lifespan
+model_service: AuthenticityModelService = None
 
-# 2. CORS
+@asynccontextmanager
+async def lifespan(app: FastAPI):
+    global model_service
+    logger.info("Initializing Finalized ML Engine Response Layer...")
+    model_service = get_service()
+    yield
+    logger.info("Shutting down ML Engine...")
+
+app = FastAPI(
+    title="CreatorTrust ML Scoring API - Final Locked Response",
+    lifespan=lifespan
+)
+
+# 3. CORS
 app.add_middleware(
     CORSMiddleware,
     allow_origins=["http://localhost:3000"],
@@ -21,7 +36,7 @@ app.add_middleware(
     allow_headers=["*"],
 )
 
-# 3. Request/Response Models
+# 4. Models
 class CreatorInput(BaseModel):
     followers: int = Field(..., gt=0)
     avg_likes: int = Field(..., ge=0)
@@ -32,26 +47,22 @@ class CreatorInput(BaseModel):
 
 class PredictResponse(BaseModel):
     score: float
+    score_label: str
     confidence: float
+    confidence_label: str
     risk_level: str
     verdict: str
+    key_takeaway: str
+    suitability_insight: str
+    raw_features: dict
     processed_features: dict
     explanation: list[str]
-    insights: list[str]
+    top_factors: list[str]
     latency_ms: float
-
-# 4. State
-model_service: AuthenticityModelService = None
-
-@app.on_event("startup")
-async def startup_event():
-    global model_service
-    logger.info("Initializing refined ML Engine...")
-    model_service = get_service()
 
 @app.get("/health")
 async def health():
-    return {"status": "healthy", "engine": "RandomForestRegressor-v2", "timestamp": time.time()}
+    return {"status": "healthy", "engine": "Refined-RF-v5-Final", "timestamp": time.time()}
 
 @app.post("/predict", response_model=PredictResponse)
 async def predict(data: CreatorInput):
@@ -60,10 +71,7 @@ async def predict(data: CreatorInput):
         if model_service is None:
             raise HTTPException(status_code=503, detail="Model Loading Error")
             
-        # Inference
         result = model_service.predict(data.dict())
-        
-        # Performance metadata
         result["latency_ms"] = round((time.time() - start_time) * 1000, 2)
         
         return result
@@ -75,9 +83,8 @@ async def predict(data: CreatorInput):
 @app.get("/")
 async def root():
     return {
-        "message": "CreatorTrust Authenticity Scoring API - Refined Edition",
-        "accuracy_target": "R2 >= 0.85",
-        "vervion": "2.0.0"
+        "message": "CreatorTrust ML Scoring API - Final Polished Output",
+        "version": "5.0.0"
     }
 
 if __name__ == "__main__":

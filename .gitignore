@@ -40,3 +40,34 @@ yarn-error.log*
 *.tsbuildinfo
 next-env.d.ts
 .agent
+
+# Python cache
+__pycache__/
+*.pyc
+*.pyo
+*.pyd
+
+# Virtual environments
+venv/
+.venv/
+.env/
+
+# Model files
+ml-engine/models/*.pkl
+ml-engine/models/*.joblib
+
+# Generated data
+ml-engine/*.csv
+ml-engine/*.json
+ml-engine/data/
+
+# Logs
+*.log
+
+# System files
+.DS_Store
+Thumbs.db
+
+# Notebooks
+*.ipynb
+.ipynb_checkpoints/
