@@ -32,13 +32,13 @@ export default function DashboardClient() {
     // Rotate messages
     const msgInterval = setInterval(() => {
       setMsgIdx((prev) => (prev + 1) % messages.length);
-    }, 600); // changes every 600ms
+    }, 1333); // changes every 1333ms
 
-    // Finish loading after 1.8s
+    // Finish loading after 4s
     const timer = setTimeout(() => {
       setLoading(false);
       clearInterval(msgInterval);
-    }, 1800);
+    }, 4000);
 
     return () => {
       clearTimeout(timer);
@@ -47,8 +47,7 @@ export default function DashboardClient() {
   }, [searchParams]);
 
   const LoadingSkeleton = () => (
-    <div className="space-y-6 lg:space-y-8 animate-in fade-in duration-500">
-      
+    <div className="space-y-6 lg:space-y-8 animate-in fade-in duration-500 w-full relative">
       {/* Header Skeleton */}
       <div className="flex flex-col md:flex-row justify-between items-start md:items-end gap-4 pb-6 border-b border-border/40">
         <div className="space-y-2">
@@ -65,9 +64,11 @@ export default function DashboardClient() {
       <div className="absolute inset-0 z-10 flex flex-col items-center justify-center bg-background/40 backdrop-blur-md rounded-xl mt-[100px] h-[600px]">
         <div className="flex flex-col items-center space-y-4">
           <div className="h-10 w-10 border-4 border-primary border-t-transparent rounded-full animate-spin"></div>
-          <p className="text-xl font-medium text-primary animate-pulse transition-opacity duration-300">
-            {messages[msgIdx]}
-          </p>
+          <div className="h-8 flex items-center justify-center">
+            <p className="text-xl font-medium text-primary animate-pulse transition-opacity duration-300 text-center">
+              {messages[msgIdx]}
+            </p>
+          </div>
         </div>
       </div>
       
@@ -86,7 +87,6 @@ export default function DashboardClient() {
           <Skeleton className="h-[350px] w-full rounded-xl bg-background/50" />
         </div>
       </div>
-      
     </div>
   );
 
@@ -102,7 +102,7 @@ export default function DashboardClient() {
       </Button>
 
       {loading ? (
-        <LoadingSkeleton />
+        <LoadingSkeleton messages={messages} msgIdx={msgIdx} />
       ) : (
         <div className="space-y-6 lg:space-y-8 animate-in slide-in-from-bottom-4 fade-in duration-700">
           
