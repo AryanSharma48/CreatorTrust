@@ -55,7 +55,8 @@ export default function DashboardClient() {
       // Minimum 3 second loading delay for UX consistency
       const minDelayPromise = new Promise(resolve => setTimeout(resolve, 3000));
       
-      const fetchPromise = fetch("http://localhost:8000/predict", {
+      const apiUrl = process.env.NEXT_PUBLIC_ML_API_URL || "http://localhost:8000";
+      const fetchPromise = fetch(`${apiUrl}/predict`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify(inputs)
