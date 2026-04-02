@@ -113,14 +113,14 @@ export default function DashboardClient() {
         </div>
       </div>
       
-      <div className="absolute inset-x-0 z-10 flex flex-col items-center justify-center bg-background/40 backdrop-blur-md rounded-xl mt-[100px] h-[500px]">
+      <div className="absolute inset-x-0 z-10 flex flex-col items-center justify-center bg-background/40 backdrop-blur-md rounded-xl mt-[100px] h-[500px] mx-2 sm:mx-0">
         <div className="flex flex-col items-center space-y-6">
           <div className="relative">
-            <div className="h-20 w-20 border-4 border-primary/20 rounded-full"></div>
-            <div className="absolute top-0 h-20 w-20 border-4 border-primary border-t-transparent rounded-full animate-spin"></div>
+            <div className="h-16 w-16 sm:h-20 sm:w-20 border-4 border-primary/20 rounded-full"></div>
+            <div className="absolute top-0 h-16 w-16 sm:h-20 sm:w-20 border-4 border-primary border-t-transparent rounded-full animate-spin"></div>
           </div>
           <div className="h-8 flex items-center justify-center">
-            <p className="text-2xl font-bold text-primary animate-pulse transition-opacity duration-300 text-center px-4 tracking-tight">
+            <p className="text-lg sm:text-2xl font-bold text-primary animate-pulse transition-opacity duration-300 text-center px-4 tracking-tight">
               {messages[msgIdx]}
             </p>
           </div>
@@ -182,32 +182,32 @@ export default function DashboardClient() {
           
           {/* Creator Header */}
           <div className="flex flex-col md:flex-row justify-between items-start md:items-end gap-6 pb-8 border-b border-border/40">
-            <div className="space-y-1">
-              <div className="flex items-center gap-3">
-                <h1 className="text-5xl font-black tracking-tighter bg-gradient-to-r from-foreground to-foreground/60 bg-clip-text text-transparent">
+            <div className="space-y-1 w-full md:w-auto">
+              <div className="flex items-center gap-3 flex-wrap">
+                <h1 className="text-3xl sm:text-4xl md:text-5xl font-black tracking-tighter bg-gradient-to-r from-foreground to-foreground/60 bg-clip-text text-transparent">
                   {handle}
                 </h1>
                 {mlResult.score >= 75 && (
                   <div className="bg-blue-500/10 p-1 rounded-full border border-blue-500/20">
-                    <BadgeCheck className="w-8 h-8 text-blue-500 fill-blue-500/10" />
+                    <BadgeCheck className="w-6 h-6 sm:w-8 sm:h-8 text-blue-500 fill-blue-500/10" />
                   </div>
                 )}
               </div>
-              <p className="text-xl text-muted-foreground font-medium flex items-center gap-2">
+              <p className="text-base sm:text-lg md:text-xl text-muted-foreground font-medium flex items-center gap-2 flex-wrap">
                 Instagram Profile <span className="text-border/60 text-sm">•</span> {(mlResult.raw_features.followers || 0).toLocaleString()} Followers
               </p>
             </div>
             
-            <div className="flex gap-4">
-              <div className="px-6 py-3 border border-border/50 rounded-2xl bg-card/30 backdrop-blur-sm flex flex-col items-center justify-center min-w-[120px] transition-all hover:bg-card/50">
-                <span className="text-[10px] text-muted-foreground uppercase font-black tracking-widest mb-1 opacity-60">Avg Likes</span>
-                <span className="text-2xl font-mono font-black text-primary">
+            <div className="flex gap-3 sm:gap-4 w-full md:w-auto">
+              <div className="flex-1 md:flex-none px-4 sm:px-6 py-3 border border-border/50 rounded-2xl bg-card/30 backdrop-blur-sm flex flex-col items-center justify-center min-w-[100px] sm:min-w-[120px] transition-all hover:bg-card/50">
+                <span className="text-[9px] sm:text-[10px] text-muted-foreground uppercase font-black tracking-widest mb-1 opacity-60">Avg Likes</span>
+                <span className="text-xl sm:text-2xl font-mono font-black text-primary">
                   {(mlResult.raw_features.avg_likes / 1000).toFixed(1)}K
                 </span>
               </div>
-              <div className="px-6 py-3 border border-border/50 rounded-2xl bg-card/30 backdrop-blur-sm flex flex-col items-center justify-center min-w-[120px] transition-all hover:bg-card/50">
-                <span className="text-[10px] text-muted-foreground uppercase font-black tracking-widest mb-1 opacity-60">Er. Rate</span>
-                <span className="text-2xl font-mono font-black text-emerald-400">
+              <div className="flex-1 md:flex-none px-4 sm:px-6 py-3 border border-border/50 rounded-2xl bg-card/30 backdrop-blur-sm flex flex-col items-center justify-center min-w-[100px] sm:min-w-[120px] transition-all hover:bg-card/50">
+                <span className="text-[9px] sm:text-[10px] text-muted-foreground uppercase font-black tracking-widest mb-1 opacity-60">Er. Rate</span>
+                <span className="text-xl sm:text-2xl font-mono font-black text-emerald-400">
                   {(mlResult.processed_features.engagement_rate * 100).toFixed(1)}%
                 </span>
               </div>
