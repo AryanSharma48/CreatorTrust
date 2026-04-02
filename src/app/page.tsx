@@ -35,8 +35,8 @@ export default function Home() {
           </div>
           <Input 
             type="text" 
-            placeholder="Enter creator handle (e.g. @username)" 
-            className="w-full pl-9 sm:pl-11 pr-24 sm:pr-32 h-12 sm:h-14 text-base sm:text-lg rounded-full border-border/60 bg-background/50 backdrop-blur-sm focus-visible:ring-primary shadow-sm transition-all"
+            placeholder="@username" 
+            className="w-full pl-9 sm:pl-11 pr-24 sm:pr-32 h-12 sm:h-14 text-base sm:text-lg rounded-full border-border/60 bg-background/50 backdrop-blur-sm focus-visible:ring-primary shadow-sm transition-all placeholder:text-ellipsis"
             value={handle}
             onChange={(e) => setHandle(e.target.value)}
           />
