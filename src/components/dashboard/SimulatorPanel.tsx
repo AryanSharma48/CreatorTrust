@@ -30,43 +30,53 @@ type CampaignType = "awareness" | "engagement" | "conversion";
 
 interface SimulatorPanelProps {
   score?: number;
+  followers?: number;
+  engagementRate?: number;
 }
 
-export function SimulatorPanel({ score = 75 }: SimulatorPanelProps) {
+export function SimulatorPanel({ 
+  score = 75, 
+  followers = 500000, 
+  engagementRate = 0.05 
+}: SimulatorPanelProps) {
   const [budget, setBudget] = useState(10000);
   const [campaignType, setCampaignType] = useState<CampaignType>("awareness");
   const [isUpdating, setIsUpdating] = useState(false);
 
   const output = useMemo(() => {
-    const baseReach = budget * 5;
-    const baseEngagement = budget * 0.2;
+    // Dynamic calculation based on ML outputs
+    const baseReach = followers * (score / 100);
+    const baseEngagement = baseReach * engagementRate;
+
+    // Budget scaling logic (assuming $10k is baseline for full potential)
+    const budgetFactor = Math.min(budget / 10000, 2.5);
 
     switch (campaignType) {
       case "awareness":
         return {
-          reach: baseReach * 2.5,
-          engagement: baseEngagement * 0.8,
-          risk: "Low Risk",
-          riskColor: "text-emerald-500",
-          riskBg: "bg-emerald-500/10",
+          reach: baseReach * budgetFactor * 1.5,
+          engagement: baseEngagement * budgetFactor * 0.5,
+          risk: score >= 75 ? "Low" : score >= 50 ? "Medium" : "High",
+          riskColor: score >= 75 ? "text-emerald-500" : score >= 50 ? "text-amber-500" : "text-red-400",
+          riskBg: score >= 75 ? "bg-emerald-500/10" : score >= 50 ? "bg-amber-500/10" : "bg-red-400/10",
           reachDelta: "+12% vs avg",
         };
       case "engagement":
         return {
-          reach: baseReach * 1.2,
-          engagement: baseEngagement * 3.5,
-          risk: "Medium Risk",
-          riskColor: "text-amber-500",
-          riskBg: "bg-amber-500/10",
+          reach: baseReach * budgetFactor * 0.8,
+          engagement: baseEngagement * budgetFactor * 2.5,
+          risk: score >= 75 ? "Low" : score >= 50 ? "Medium" : "High",
+          riskColor: score >= 75 ? "text-emerald-500" : score >= 50 ? "text-amber-500" : "text-red-400",
+          riskBg: score >= 75 ? "bg-emerald-500/10" : score >= 50 ? "bg-amber-500/10" : "bg-red-400/10",
           reachDelta: "+5% vs avg",
         };
       case "conversion":
         return {
-          reach: baseReach * 0.8,
-          engagement: baseEngagement * 1.5,
-          risk: "High Risk",
-          riskColor: "text-red-400",
-          riskBg: "bg-red-400/10",
+          reach: baseReach * budgetFactor * 0.5,
+          engagement: baseEngagement * budgetFactor * 1.2,
+          risk: score >= 60 ? "Medium" : "High",
+          riskColor: score >= 60 ? "text-amber-500" : "text-red-400",
+          riskBg: score >= 60 ? "bg-amber-500/10" : "bg-red-400/10",
           reachDelta: "-3% vs avg",
         };
       default:
@@ -79,7 +89,7 @@ export function SimulatorPanel({ score = 75 }: SimulatorPanelProps) {
           reachDelta: "",
         };
     }
-  }, [budget, campaignType]);
+  }, [budget, campaignType, score, followers, engagementRate]);
 
   const handleSliderChange = (value: number | readonly number[]) => {
     const newVal = Array.isArray(value) ? value[0] : value;
@@ -99,18 +109,23 @@ export function SimulatorPanel({ score = 75 }: SimulatorPanelProps) {
   };
 
   const insight = useMemo(() => {
-    const riskMap = { "Low Risk": "minimal", "Medium Risk": "moderate", "High Risk": "significant" };
-    const risk = riskMap[output.risk as keyof typeof riskMap] || "calculated";
-    
     if (score >= 75) {
-      if (campaignType === "awareness") return "This creator is highly effective for awareness campaigns with extremely low fraud risk.";
-      if (campaignType === "engagement") return "Expect high-quality interactions from a verified authentic audience.";
+      if (campaignType === "awareness") return "Highly recommended. Excellent organic reach potential with minimal bot risk.";
+      if (campaignType === "engagement") return "Exceptional interaction quality from a verified authentic audience.";
       return "Strong conversion potential backed by high audience trust scores.";
     } else if (score >= 50) {
-      return `Moderate authenticity suggests a ${risk} risk profile for this ${campaignType} objective.`;
+      return `Moderate authenticity — expect a ${output.risk.toLowerCase()} risk profile for ${campaignType} objectives.`;
     }
-    return "Caution: High risk of inorganic engagement detected. Proceed with performance-linked contracts.";
+    return "Caution: Significant markers of inorganic engagement detected. Proceed with performance-linked contracts.";
   }, [score, campaignType, output.risk]);
+
+  const recommendedBudget = useMemo(() => {
+    // Base cost: $15 - $45 per 1,000 followers, adjusted by score
+    const qualityMultiplier = score / 100;
+    const min = (followers / 1000) * 15 * qualityMultiplier;
+    const max = (followers / 1000) * 45 * qualityMultiplier;
+    return { min: Math.max(1000, min), max: Math.max(2500, max) };
+  }, [followers, score]);
 
   return (
     <Card className="col-span-full border-border/40 shadow-sm transition-all hover:shadow-md bg-card/60 backdrop-blur-sm overflow-hidden flex flex-col md:flex-row">
@@ -121,7 +136,7 @@ export function SimulatorPanel({ score = 75 }: SimulatorPanelProps) {
             <Calculator className="w-5 h-5 text-primary" /> What-If Simulator
           </h2>
           <CardDescription>
-            Predict campaign outcomes dynamically based on historical data.
+            Predict campaign outcomes dynamically based on live ML insights.
           </CardDescription>
         </div>
 
@@ -135,7 +150,7 @@ export function SimulatorPanel({ score = 75 }: SimulatorPanelProps) {
             </div>
             <Slider
               defaultValue={[10000]}
-              max={100000}
+              max={200000}
               min={1000}
               step={1000}
               value={[budget]}
@@ -144,7 +159,7 @@ export function SimulatorPanel({ score = 75 }: SimulatorPanelProps) {
             />
             <div className="flex justify-between text-xs text-muted-foreground font-mono">
               <span>{formatINR(1000)}</span>
-              <span>{formatINR(100000)}</span>
+              <span>{formatINR(200000)}</span>
             </div>
           </div>
 
@@ -166,9 +181,9 @@ export function SimulatorPanel({ score = 75 }: SimulatorPanelProps) {
         <div className="bg-primary/5 rounded-lg p-4 flex items-start gap-3 border border-primary/20">
           <Info className="w-5 h-5 text-primary shrink-0 mt-0.5" />
           <p className="text-sm text-primary/80">
-            Recommended budget for this creator:{" "}
+            Dynamic budget range for this profile:{" "}
             <span className="font-semibold text-primary">
-              {formatINR(8000)} – {formatINR(25000)}
+              {formatINR(recommendedBudget.min)} – {formatINR(recommendedBudget.max)}
             </span>
           </p>
         </div>

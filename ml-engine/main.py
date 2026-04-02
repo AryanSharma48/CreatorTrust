@@ -66,6 +66,7 @@ async def health():
 
 @app.post("/predict", response_model=PredictResponse)
 async def predict(data: CreatorInput):
+    logger.info(f"PREDICT REQUEST: {data.dict()}")
     start_time = time.time()
     try:
         if model_service is None:

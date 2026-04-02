@@ -29,48 +29,78 @@ class AuthenticityModelService:
         """
         Input: {followers, avg_likes, avg_comments, follower_growth_std, comment_uniqueness_ratio, fake_follower_ratio}
         """
-        # 1. Feature Engineering
-        er = (input_data['avg_likes'] + input_data['avg_comments']) / (input_data['followers'] + 1)
-        ltcr = input_data['avg_likes'] / (input_data['avg_comments'] + 1)
-        eng_uniq = er * input_data['comment_uniqueness_ratio']
-        growth_eng = input_data['follower_growth_std'] / (er + 0.001)
+        # 1. Safeguards & Base Inputs
+        followers = max(1, input_data.get('followers', 1))
+        avg_likes = max(0, input_data.get('avg_likes', 0))
+        avg_comments = max(0, input_data.get('avg_comments', 0))
+        growth_std = max(0, input_data.get('follower_growth_std', 0))
+        uniq_ratio = np.clip(input_data.get('comment_uniqueness_ratio', 0.85), 0, 1)
+        fake_ratio = np.clip(input_data.get('fake_follower_ratio', 0.05), 0, 1)
+
+        # 2. Feature Engineering (Scaled Decimal Form)
+        er = np.clip((avg_likes + avg_comments) / (followers + 0.001), 0, 1)
+        ltcr = avg_likes / (avg_comments + 1)
+        eng_uniq = er * uniq_ratio
+        growth_eng = growth_std / (er + 0.001)
         
         processed_features = {
             'engagement_rate': er,
-            'comment_uniqueness_ratio': input_data['comment_uniqueness_ratio'],
-            'growth_variance': input_data['follower_growth_std'],
+            'comment_uniqueness_ratio': uniq_ratio,
+            'growth_variance': growth_std,
             'like_to_comment_ratio': ltcr,
             'engagement_uniqueness': eng_uniq,
-            'growth_engagement_ratio': growth_eng
+            'growth_engagement_ratio': growth_eng,
+            'fake_follower_ratio': fake_ratio
         }
         
         full_features = {
-            'followers': input_data['followers'],
-            'avg_likes': input_data['avg_likes'],
-            'avg_comments': input_data['avg_comments'],
+            'followers': followers,
+            'avg_likes': avg_likes,
+            'avg_comments': avg_comments,
             **processed_features
         }
         
-        # 2. Scaling and Model Prediction
+        # 3. Scaling and Model Prediction
         feature_vector = [full_features[f] for f in self.feature_names]
         scaled_vector = self.scaler.transform([feature_vector])
-        
+
+        # DEBUG LOGGING (Verification)
+        print("-" * 40)
+        print(f"RAW INPUT: {input_data}")
+        print(f"COMPUTED FEATURES: {processed_features}")
+        print(f"SCALED VECTOR: {scaled_vector[0]}")
+        print("-" * 40)
+
         # Raw Prediction
         raw_score = self.model.predict(scaled_vector)[0]
         
-        # 3. Calibration
+        # 3. Calibration & Post-Model Penalty
+        # Base calibration
         scaled_score = raw_score * 1.15
-        if er > 0.06 and input_data['comment_uniqueness_ratio'] > 0.85:
+        if er > 0.06 and uniq_ratio > 0.85:
             scaled_score += 10.0
-        elif er > 0.04 or input_data['comment_uniqueness_ratio'] > 0.8:
+        elif er > 0.04 or uniq_ratio > 0.8:
             scaled_score += 5.0
             
-        final_score = np.clip(scaled_score, 0, 100)
+        # Apply significant non-linear penalty for fake followers (Requested Fix)
+        # (1 - fake_ratio)^3 ensures an exponential drop as fake ratio increases
+        penalty = (1 - fake_ratio) ** 3
+        final_score = scaled_score * penalty
+        
+        with open("predict_debug.log", "a") as f:
+            f.write(f"TIME: {time.time()} | FAKE_RATIO: {fake_ratio} | PENALTY: {penalty} | FINAL_SCORE: {final_score}\n")
+
+        # Clamp between 0 and 100
+        final_score = np.clip(final_score, 0, 100)
         
         # 4. Confidence Score
         tree_preds = np.array([tree.predict(scaled_vector)[0] for tree in self.model.estimators_])
         std_dev = np.std(tree_preds)
         confidence = 100 * (1 - min(std_dev / 10.0, 1.0))
+        
+        # If fake ratio is extreme, reduce confidence too
+        if fake_ratio > 0.6:
+            confidence = min(confidence, 40.0)
         
         # 5. LABELS & VERDICTS (Finalized Polish)
         score_label = self._get_score_label(final_score)
@@ -82,7 +112,16 @@ class AuthenticityModelService:
         
         # 6. EXPLAINABILITY (Finalized Factors & Explanation)
         top_factors = self._generate_top_factors(full_features, scaled_vector[0])
+        
+        # Inject penalty if relevant
+        if fake_ratio > 0.3 and "High Fake Follower Ratio" not in top_factors:
+            top_factors.insert(0, "Extreme Fraud Risk" if fake_ratio > 0.6 else "High Fake Followers")
+            top_factors = top_factors[:3]
+
         explanation = self._generate_explanation(full_features, scaled_vector[0])
+        if fake_ratio > 0.5:
+            explanation.insert(0, f"Score penalized significantly due to high bot detection ({round(fake_ratio * 100)}%).")
+            explanation = explanation[:2]
         
         # Clean processed features for transparency
         clean_processed = {f: round(val, 4) for f, val in processed_features.items()}
