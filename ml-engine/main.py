@@ -2,6 +2,10 @@ from fastapi import FastAPI, HTTPException, Request
 from fastapi.middleware.cors import CORSMiddleware
 from pydantic import BaseModel, Field
 from model_service import get_service, AuthenticityModelService
+from contract_service import (
+    start_contract, verify_contract, release_payment, get_contract_status, reset_contract,
+    StartContractInput, VerifyContractInput, ContractStateResponse
+)
 import uvicorn
 import time
 import logging
@@ -91,6 +95,61 @@ async def root():
         "message": "CreatorTrust ML Scoring API - Final Polished Output",
         "version": "5.0.0"
     }
+
+# ============ CONTRACT ENDPOINTS ============
+
+@app.post("/contract/start", response_model=ContractStateResponse)
+async def contract_start(data: StartContractInput):
+    """Start a new campaign contract and lock funds"""
+    logger.info(f"CONTRACT START: budget={data.budget}, threshold={data.engagement_threshold}")
+    try:
+        result = start_contract(data.budget, data.engagement_threshold)
+        return result
+    except Exception as e:
+        logger.error(f"Contract start error: {str(e)}")
+        raise HTTPException(status_code=500, detail=str(e))
+
+
+@app.post("/contract/verify", response_model=ContractStateResponse)
+async def contract_verify(data: VerifyContractInput):
+    """Verify contract conditions based on ML score and engagement"""
+    logger.info(f"CONTRACT VERIFY: score={data.score}, engagement={data.engagement}")
+    try:
+        result = verify_contract(data.score, data.engagement)
+        return result
+    except ValueError as e:
+        raise HTTPException(status_code=400, detail=str(e))
+    except Exception as e:
+        logger.error(f"Contract verify error: {str(e)}")
+        raise HTTPException(status_code=500, detail=str(e))
+
+
+@app.post("/contract/release", response_model=ContractStateResponse)
+async def contract_release():
+    """Release payment if conditions are met"""
+    logger.info("CONTRACT RELEASE requested")
+    try:
+        result = release_payment()
+        return result
+    except ValueError as e:
+        raise HTTPException(status_code=400, detail=str(e))
+    except Exception as e:
+        logger.error(f"Contract release error: {str(e)}")
+        raise HTTPException(status_code=500, detail=str(e))
+
+
+@app.get("/contract/status", response_model=ContractStateResponse)
+async def contract_status():
+    """Get current contract state"""
+    return get_contract_status()
+
+
+@app.post("/contract/reset", response_model=ContractStateResponse)
+async def contract_reset():
+    """Reset contract to initial state"""
+    logger.info("CONTRACT RESET")
+    return reset_contract()
+
 
 if __name__ == "__main__":
     uvicorn.run(app, host="0.0.0.0", port=8000)

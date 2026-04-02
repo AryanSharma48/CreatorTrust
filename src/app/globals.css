@@ -151,3 +151,72 @@
     @apply font-sans;
   }
 }
+
+/* Custom scrollbar styling */
+.no-scrollbar {
+  -ms-overflow-style: none;
+  scrollbar-width: none;
+}
+.no-scrollbar::-webkit-scrollbar {
+  display: none;
+}
+
+/* Themed scrollbar for dashboard */
+.themed-scrollbar::-webkit-scrollbar {
+  width: 8px;
+  height: 8px;
+}
+.themed-scrollbar::-webkit-scrollbar-track {
+  background: oklch(0.18 0.003 285);
+  border-radius: 4px;
+}
+.themed-scrollbar::-webkit-scrollbar-thumb {
+  background: oklch(0.65 0.2 270);
+  border-radius: 4px;
+}
+.themed-scrollbar::-webkit-scrollbar-thumb:hover {
+  background: oklch(0.55 0.22 270);
+}
+.themed-scrollbar {
+  scrollbar-width: thin;
+  scrollbar-color: oklch(0.65 0.2 270) oklch(0.18 0.003 285);
+}
+
+/* Apply themed scrollbar to html globally */
+html::-webkit-scrollbar {
+  width: 8px;
+  height: 8px;
+}
+html::-webkit-scrollbar-track {
+  background: oklch(0.18 0.003 285);
+}
+html::-webkit-scrollbar-thumb {
+  background: oklch(0.65 0.2 270);
+  border-radius: 4px;
+}
+html::-webkit-scrollbar-thumb:hover {
+  background: oklch(0.55 0.22 270);
+}
+html {
+  scrollbar-width: thin;
+  scrollbar-color: oklch(0.65 0.2 270) oklch(0.18 0.003 285);
+}
+
+/* Grid background utilities */
+.bg-grid {
+  background-image: linear-gradient(to right, rgba(255, 255, 255, 0.03) 1px, transparent 1px),
+    linear-gradient(to bottom, rgba(255, 255, 255, 0.03) 1px, transparent 1px);
+  background-size: 24px 24px;
+}
+
+.bg-grid-white\/\[0\.05\] {
+  background-image: linear-gradient(to right, rgba(255, 255, 255, 0.05) 1px, transparent 1px),
+    linear-gradient(to bottom, rgba(255, 255, 255, 0.05) 1px, transparent 1px);
+  background-size: 24px 24px;
+}
+
+.bg-grid-black\/\[0\.07\] {
+  background-image: linear-gradient(to right, rgba(0, 0, 0, 0.07) 1px, transparent 1px),
+    linear-gradient(to bottom, rgba(0, 0, 0, 0.07) 1px, transparent 1px);
+  background-size: 24px 24px;
+}

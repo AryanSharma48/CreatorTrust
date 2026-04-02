@@ -1,14 +1,23 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { useRouter } from "next/navigation";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
+import { GridBeam } from "@/components/ui/background-grid-beam";
 import { ArrowRight, Search } from "lucide-react";
 
 export default function Home() {
   const [handle, setHandle] = useState("");
   const router = useRouter();
+
+  // Disable scrollbar on landing page
+  useEffect(() => {
+    document.body.style.overflow = "hidden";
+    return () => {
+      document.body.style.overflow = "";
+    };
+  }, []);
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
@@ -18,7 +27,7 @@ export default function Home() {
   };
 
   return (
-    <div className="flex flex-col items-center justify-center min-h-[80vh] text-center space-y-8 sm:space-y-12 px-2">
+    <GridBeam className="flex flex-col items-center justify-center min-h-[80vh] text-center space-y-8 sm:space-y-12 px-2">
       <div className="space-y-4 sm:space-y-6 max-w-3xl">
         <h1 className="text-3xl sm:text-5xl md:text-7xl font-extrabold tracking-tight bg-clip-text text-transparent bg-gradient-to-br from-foreground to-foreground/60">
           Verify Influence. <br className="hidden sm:block"/> Pay for Performance.
@@ -64,6 +73,6 @@ export default function Home() {
           <p className="text-muted-foreground">Get benchmarked budget recommendations based on absolute data.</p>
         </div>
       </div>
-    </div>
+      </GridBeam>
   );
 }
