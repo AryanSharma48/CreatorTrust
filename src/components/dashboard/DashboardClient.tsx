@@ -51,11 +51,17 @@ export default function DashboardClient() {
       setError(null);
       
       console.log("SENDING PREDICT REQUEST:", inputs);
-      const response = await fetch("http://localhost:8000/predict", {
+      
+      // Minimum 3 second loading delay for UX consistency
+      const minDelayPromise = new Promise(resolve => setTimeout(resolve, 3000));
+      
+      const fetchPromise = fetch("http://localhost:8000/predict", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify(inputs)
       });
+
+      const [response] = await Promise.all([fetchPromise, minDelayPromise]);
 
       if (!response.ok) {
         throw new Error("Unable to analyze creator. Please check if ML Engine is running.");
@@ -63,12 +69,8 @@ export default function DashboardClient() {
 
       const data: PredictResponse = await response.json();
       setMlResult(data);
-      
-      // Artificial delay for smooth UX transition
-      setTimeout(() => {
-        setLoading(false);
-        setIsAnalyzing(false);
-      }, 600);
+      setLoading(false);
+      setIsAnalyzing(false);
       
     } catch (err: any) {
       console.error("Dashboard Predict Error:", err);
