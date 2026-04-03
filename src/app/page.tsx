@@ -27,7 +27,7 @@ export default function Home() {
   };
 
   return (
-    <GridBeam className="flex flex-col items-center justify-center min-h-[80vh] text-center space-y-8 sm:space-y-12 px-2">
+    <GridBeam className="flex flex-col items-center justify-center min-h-[80vh] text-center space-y-8 sm:space-y-12 px-2 pt-12">
       <div className="space-y-4 sm:space-y-6 max-w-3xl">
         <h1 className="text-3xl sm:text-5xl md:text-7xl font-extrabold tracking-tight bg-clip-text text-transparent bg-gradient-to-br from-foreground to-foreground/60">
           Verify Influence. <br className="hidden sm:block"/> Pay for Performance.
