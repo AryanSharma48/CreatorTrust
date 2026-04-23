@@ -70,7 +70,7 @@ class PredictResponse(BaseModel):
 
 @app.get("/health")
 async def health():
-    return {"status": "healthy", "engine": "Refined-RF-v5-Final", "timestamp": time.time()}
+    return {"status": "healthy", "engine": "Refined-RF-v5-Final"}
 
 @app.post("/predict", response_model=PredictResponse)
 async def predict(data: CreatorInput):
